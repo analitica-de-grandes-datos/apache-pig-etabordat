@@ -1,21 +1,39 @@
-#
+import fileinput
+import glob
 import os
+from os.path import dirname
 
-result = os.popen("cat data.csv | python3 mapper.py | sort | python3 reducer.py").read()
+module_path = dirname(__file__)
+os.chdir(module_path)
 
-lines = [line.strip().replace("\n", "") for line in result.split("\n")]
 
-expected = """A	18.4	10.7
-B	17.0	10.7
-C	15.3	10.2
-D	15.1	15.1
-E	18.8	10.5
-""".split(
-    "\n"
-)
+expected = [
+    "aaa,13",
+    "bbb,16",
+    "ccc,23",
+    "ddd,23",
+    "eee,15",
+    "fff,20",
+    "ggg,13",
+    "hhh,16",
+    "iii,18",
+    "jjj,18",
+]
 
-if len(lines) != len(expected):
-    raise Exception("Wrong number of lines")
+if os.path.isdir("output"):
+    os.system("rm -rf output")
 
-for solution, expected in zip(lines, expected):
-    assert solution == expected, f"Expected: {expected}\nGot: {solution}"
+os.system("docker run -v $PWD:/workspace jdvelasq/pig:classroom")
+
+assert os.path.isdir("output") is True
+
+result = []
+with fileinput.input(files=glob.glob("output/*")) as f:
+    for line in f:
+        line = line.replace("\n", "")
+        result.append(line)
+
+for expected_line, result_line in zip(expected, result):
+    assert (
+        expected_line == result_line
+    ), f"Expected: {expected_line}\nGot: {result_line}"
