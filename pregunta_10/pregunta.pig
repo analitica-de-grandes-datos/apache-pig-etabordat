@@ -21,3 +21,17 @@ $ pig -x local -f pregunta.pig
         >>> Escriba su respuesta a partir de este punto <<<
 */
 
+data_table = LOAD 'data.csv' USING PigStorage(',')
+    AS (
+        Id:int,
+        Nombre:chararray,
+        Apellido:chararray,
+        Fecha:datetime,
+        Color:chararray,
+        Cantidad:int
+    );
+
+specific_columns = FOREACH data_table GENERATE Apellido , SIZE(Apellido) AS tamano;
+columns_order = ORDER specific_columns BY tamano desc, Apellido;
+limit_output = LIMIT columns_order 5;
+STORE limit_output INTO 'output' USING PigStorage(',');
